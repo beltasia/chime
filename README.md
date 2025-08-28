@@ -63,46 +63,5 @@ UI (React components)
 Firebase SDK  —  Auth (users) / Firestore (rooms/messages) / RTDB (presence)
    ↓
 Vercel (hosting) — CI/CD via GitHub pushes
-🗃️ Data Model
 
-Collections (Firestore)
 
-users/{userId}
-
-displayName, photoURL, email, createdAt, lastSeen
-
-rooms/{roomId} (for group chat; omit for pure DMs)
-
-name, createdBy, createdAt, isPrivate (bool), memberCount
-
-roomMembers/{roomId}/members/{userId}
-
-role ("owner" | "member"), joinedAt
-
-messages/{roomId}/items/{messageId}
-
-senderId, text, attachments[], createdAt (serverTimestamp), status ("sending" | "delivered" | "seen"), seenBy[]
-
-dmThreads/{threadId} (optional 1:1 threads)
-
-users: [userAId, userBId], createdAt, lastMessageAt
-
-dmMessages/{threadId}/items/{messageId} (same shape as room messages)
-
-Ephemeral state
-
-typing/{roomId} (Firestore or RTDB)
-
-map of { userId: lastTypedAtMillis }
-
-Presence (recommended: RTDB with onDisconnect))
-
-status/{userId} → { state: "online"|"offline", lastChanged: epochMillis }
-
-Indexes (Firestore)
-
-messages.items: composite on roomId (collection group), createdAt (asc), senderId (where needed)
-
-dmMessages.items: same pattern
-
-rooms: index name for search or createdAt for listing
