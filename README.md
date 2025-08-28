@@ -1,30 +1,108 @@
-# Chime chat application
+Chime — Real‑Time Chat Application
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+A modern, production‑ready chat app focused on speed, reliability, and developer joy. Chime ships with a clean UI, Firebase‑powered real‑time messaging, authentication, and an auto‑deploy pipeline (v0.dev → GitHub → Vercel) so changes go live instantly.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/mellisas-projects-b938dd2d/v0-chime-chat-application)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/8pIU9o1kNpM)
+Elevator pitch: Chime is a lightweight, extensible chat starter you can ship today and scale tomorrow—DMs, rooms, presence, typing indicators, media, the works.
 
-## Overview
+✨ Features
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+Real‑time messages with Firestore snapshots (sub‑second delivery).
 
-## Deployment
+Auth via Firebase Authentication (Email/Password, Google optional).
 
-Your project is live at:
+DMs & Rooms (1:1 and multi‑user channels).
 
-**[https://vercel.com/mellisas-projects-b938dd2d/v0-chime-chat-application](https://vercel.com/mellisas-projects-b938dd2d/v0-chime-chat-application)**
+Typing indicators with per‑room ephemeral state.
 
-## Build your app
+Presence (online/away/last seen).
 
-Continue building your app on:
+Read receipts (delivered/seen + seenBy[]).
 
-**[https://v0.dev/chat/projects/8pIU9o1kNpM](https://v0.dev/chat/projects/8pIU9o1kNpM)**
+Attachments (images/files) via Firebase Storage with secure rules.
 
-## How It Works
+Search & pagination (fast scrollback using indexed queries).
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+Responsive UI (mobile‑first, keyboard‑friendly).
+
+Offline support (Firestore persistence + optimistic UI).
+
+Auto‑deploy workflow (v0.dev → GitHub → Vercel).
+
+Optional add‑ons: push notifications (FCM), link unfurling, message reactions, message editing/deleting with audit trail.
+
+🔗 Live Demo
+
+Vercel preview: https://vercel.com/mellisas-projects-b938dd2d/v0-chime-chat-application
+
+Repository: https://github.com/beltasia/chime
+
+🧱 Architecture Overview
+
+Stack
+
+Framework: Next.js + React (App Router)
+
+Language: TypeScript
+
+Realtime & Auth: Firebase (Firestore, Auth)
+
+Presence: Firebase Realtime Database (recommended) or Firestore fallback
+
+Storage: Firebase Storage (attachments)
+
+Styling: Tailwind CSS
+
+Deployment: Vercel
+
+Data Flow (high‑level)
+
+UI (React components)
+   ↓              ↑
+   ↓ Firestore snapshots (realtime updates)
+   ↓              ↑
+Firebase SDK  —  Auth (users) / Firestore (rooms/messages) / RTDB (presence)
+   ↓
+Vercel (hosting) — CI/CD via GitHub pushes
+🗃️ Data Model
+
+Collections (Firestore)
+
+users/{userId}
+
+displayName, photoURL, email, createdAt, lastSeen
+
+rooms/{roomId} (for group chat; omit for pure DMs)
+
+name, createdBy, createdAt, isPrivate (bool), memberCount
+
+roomMembers/{roomId}/members/{userId}
+
+role ("owner" | "member"), joinedAt
+
+messages/{roomId}/items/{messageId}
+
+senderId, text, attachments[], createdAt (serverTimestamp), status ("sending" | "delivered" | "seen"), seenBy[]
+
+dmThreads/{threadId} (optional 1:1 threads)
+
+users: [userAId, userBId], createdAt, lastMessageAt
+
+dmMessages/{threadId}/items/{messageId} (same shape as room messages)
+
+Ephemeral state
+
+typing/{roomId} (Firestore or RTDB)
+
+map of { userId: lastTypedAtMillis }
+
+Presence (recommended: RTDB with onDisconnect))
+
+status/{userId} → { state: "online"|"offline", lastChanged: epochMillis }
+
+Indexes (Firestore)
+
+messages.items: composite on roomId (collection group), createdAt (asc), senderId (where needed)
+
+dmMessages.items: same pattern
+
+rooms: index name for search or createdAt for listing
